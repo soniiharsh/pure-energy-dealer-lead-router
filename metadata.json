@@ -1,0 +1,8 @@
+{
+  "name": "Dealer Lead Router",
+  "description": "Intelligent dealer lead routing, legacy CSV cleaning, and Firestore-backed management for PURE Energy PuREPower.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

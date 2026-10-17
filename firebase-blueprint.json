@@ -1,0 +1,161 @@
+{
+  "entities": {
+    "Dealer": {
+      "title": "Dealer",
+      "description": "Authorized PURE Energy PuREPower dealer entity with covered pincode prefixes",
+      "type": "object",
+      "properties": {
+        "dealerId": {
+          "type": "string",
+          "description": "Unique identifier for dealer e.g. D001"
+        },
+        "name": {
+          "type": "string",
+          "description": "Dealer business name"
+        },
+        "pincodePrefixes": {
+          "type": "string",
+          "description": "Pipe-separated list of 3-digit covered pincode prefixes e.g. 560|561|562"
+        },
+        "contactPerson": {
+          "type": "string",
+          "description": "Primary contact manager"
+        },
+        "phone": {
+          "type": "string",
+          "description": "Primary contact phone number"
+        },
+        "email": {
+          "type": "string",
+          "description": "Dealer contact email address"
+        },
+        "city": {
+          "type": "string",
+          "description": "Operating city"
+        },
+        "state": {
+          "type": "string",
+          "description": "Operating state"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "ISO timestamp of creation"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "ISO timestamp of last update"
+        }
+      },
+      "required": ["dealerId", "name", "pincodePrefixes"]
+    },
+    "Lead": {
+      "title": "Lead",
+      "description": "Customer lead enquiry routed to an authorized dealer or In-house Sales",
+      "type": "object",
+      "properties": {
+        "leadId": {
+          "type": "string",
+          "description": "Unique lead identifier e.g. LEAD-1001"
+        },
+        "name": {
+          "type": "string",
+          "description": "Customer full name"
+        },
+        "phone": {
+          "type": "string",
+          "description": "Normalized 10-digit Indian phone number"
+        },
+        "pincode": {
+          "type": "string",
+          "description": "6-digit Indian postal code"
+        },
+        "product": {
+          "type": "string",
+          "description": "Requested PuREPower energy storage product"
+        },
+        "source": {
+          "type": "string",
+          "enum": ["Website", "AI Voice Call", "Voice Agent", "WhatsApp", "Dealer Walk-in", "Other"],
+          "description": "Lead origin channel"
+        },
+        "assignedDealerId": {
+          "type": "string",
+          "description": "Matched dealer ID or INHOUSE"
+        },
+        "assignedDealerName": {
+          "type": "string",
+          "description": "Matched dealer name or In-house Sales"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["New", "Contacted", "Converted", "Lost"],
+          "description": "Current lead progress status"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Creation timestamp"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Last update timestamp"
+        }
+      },
+      "required": ["leadId", "name", "phone", "pincode", "product", "source", "assignedDealerId", "assignedDealerName", "status"]
+    },
+    "LeadUniqueness": {
+      "title": "LeadUniqueness",
+      "description": "Atomic unique phone reservation record to prevent duplicate leads",
+      "type": "object",
+      "properties": {
+        "phone": {
+          "type": "string",
+          "description": "Normalized 10-digit phone number"
+        },
+        "leadId": {
+          "type": "string",
+          "description": "Associated lead ID"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Creation timestamp"
+        }
+      },
+      "required": ["phone", "leadId"]
+    },
+    "LeadNotification": {
+      "title": "LeadNotification",
+      "description": "Durable idempotency and delivery audit ledger for dealer lead email notifications",
+      "type": "object",
+      "properties": {
+        "leadId": { "type": "string", "description": "Associated lead ID" },
+        "eventId": { "type": "string", "description": "CloudEvent execution ID" },
+        "status": { "type": "string", "enum": ["PROCESSING", "SENT", "FAILED", "SKIPPED_NO_DEALER_EMAIL", "SKIPPED_INHOUSE_NO_EMAIL"] },
+        "recipientEmail": { "type": "string", "description": "Target dealer contact email" },
+        "provider": { "type": "string", "description": "Delivery provider used e.g. resend, sendgrid, mock" },
+        "messageId": { "type": "string", "description": "Provider message ID" },
+        "sentAt": { "type": "string", "description": "ISO timestamp of successful send" },
+        "attempts": { "type": "number", "description": "Number of dispatch attempts" },
+        "errorMessage": { "type": "string", "description": "Actionable error reason if skipped or failed" }
+      },
+      "required": ["leadId", "status"]
+    }
+  },
+  "firestore": {
+    "/dealers/{dealerId}": {
+      "schema": "Dealer",
+      "description": "Collection of all authorized PURE Energy dealers and prefix coverages"
+    },
+    "/leads/{leadId}": {
+      "schema": "Lead",
+      "description": "Collection of customer leads and routing status"
+    },
+    "/lead_uniqueness/{phone}": {
+      "schema": "LeadUniqueness",
+      "description": "Index collection enforcing 1:1 phone uniqueness for leads atomically"
+    },
+    "/lead_notifications/{leadId}": {
+      "schema": "LeadNotification",
+      "description": "Durable server-authoritative audit ledger for dealer email notification idempotency"
+    }
+  }
+}

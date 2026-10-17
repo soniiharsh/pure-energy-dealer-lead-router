@@ -1,0 +1,41 @@
+lead_id,action,reason
+L1001,imported,Valid record imported without modifications
+L1002,imported,Valid record imported without modifications
+L1003,imported,Valid record imported without modifications
+L1004,fixed,Cleaned: normalized mobile format
+L1005,imported,Valid record imported without modifications
+L1006,fixed,Cleaned: normalized mobile format
+L1007,imported,Valid record imported without modifications
+L1008,imported,Valid record imported without modifications
+L1009,rejected,Invalid mobile number length (5 digits; 10 expected)
+L1010,imported,Valid record imported without modifications
+L1011,imported,Valid record imported without modifications
+L1012,rejected,Invalid pincode length (4 digits; 6 expected)
+L1013,imported,Valid record imported without modifications
+L1014,imported,Valid record imported without modifications
+L1015,assigned_inhouse,No dealer covers pincode prefix 110; assigned to In-house Sales
+L1016,imported,Valid record imported without modifications
+L1017,imported,Valid record imported without modifications
+L1018,fixed,Cleaned: normalized date format
+L1019,imported,Valid record imported without modifications
+L1020,fixed,Cleaned: standardized status casing
+L1021,imported,Valid record imported without modifications
+L1022,imported,Valid record imported without modifications
+L1023,fixed,Cleaned: standardized product name
+L1024,imported,Valid record imported without modifications
+L1025,imported,Valid record imported without modifications
+L1026,rejected,Missing required customer name
+L1027,imported,Valid record imported without modifications
+L1028,fixed,Cleaned: standardized source casing
+L1029,imported,Valid record imported without modifications
+L1030,imported,Valid record imported without modifications
+L1031,imported,Valid record imported without modifications
+L1032,imported,Valid record imported without modifications
+L1033,imported,Valid record imported without modifications
+L1034,imported,Valid record imported without modifications
+L1035,imported,Valid record imported without modifications
+L1036,merged,Duplicate mobile number matching lead L1003; merged into existing record
+L1037,merged,Duplicate mobile number matching lead L1010; merged into existing record
+L1038,merged,Duplicate mobile number matching lead L1031; merged into existing record
+L1039,merged,Duplicate mobile number matching lead L1007; merged into existing record
+L1033,merged,Duplicate mobile number matching lead L1013; merged into existing record

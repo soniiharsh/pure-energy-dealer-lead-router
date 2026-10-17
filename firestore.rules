@@ -1,0 +1,99 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default Deny Catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Hardened Global Helpers
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-\\.]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidPhone(phone) {
+      return phone is string && phone.size() == 10 && phone.matches('^[6-9][0-9]{9}$');
+    }
+
+    function isValidPincode(pincode) {
+      return pincode is string && pincode.size() == 6 && pincode.matches('^[1-9][0-9]{5}$');
+    }
+
+    function isValidStatus(status) {
+      return status in ['New', 'Contacted', 'Converted', 'Lost'];
+    }
+
+    function isValidSource(source) {
+      return source in ['Website', 'AI Voice Call', 'Voice Agent', 'WhatsApp', 'Dealer Walk-in', 'Other'];
+    }
+
+    function isValidDealer(data) {
+      return data.dealerId is string && data.dealerId.size() > 0 && data.dealerId.size() <= 32
+        && data.name is string && data.name.size() > 0 && data.name.size() <= 128
+        && data.pincodePrefixes is string && data.pincodePrefixes.size() <= 256;
+    }
+
+    function isValidLead(data) {
+      return data.keys().hasAll(['leadId', 'name', 'phone', 'pincode', 'product', 'source', 'assignedDealerId', 'assignedDealerName', 'status'])
+        && data.leadId is string && data.leadId.size() > 0 && data.leadId.size() <= 64
+        && data.name is string && data.name.size() >= 2 && data.name.size() <= 100
+        && isValidPhone(data.phone)
+        && isValidPincode(data.pincode)
+        && data.product is string && data.product.size() >= 2 && data.product.size() <= 100
+        && isValidSource(data.source)
+        && isValidStatus(data.status)
+        && data.assignedDealerId is string && data.assignedDealerId.size() <= 64
+        && data.assignedDealerName is string && data.assignedDealerName.size() <= 128;
+    }
+
+    function isValidLeadUpdate(inData, exData) {
+      return inData.leadId == exData.leadId
+        && inData.phone == exData.phone
+        && inData.pincode == exData.pincode
+        && isValidStatus(inData.status)
+        && inData.diff(exData).affectedKeys().hasOnly(['status', 'updatedAt', 'notes', 'assignedDealerId', 'assignedDealerName']);
+    }
+
+    function isValidUniqueness(data, phone) {
+      return data.keys().hasAll(['phone', 'leadId'])
+        && data.phone is string && data.phone == phone && isValidPhone(data.phone)
+        && data.leadId is string && data.leadId.size() > 0 && data.leadId.size() <= 64;
+    }
+
+    // 1. Authorized Dealers Collection
+    match /dealers/{dealerId} {
+      allow get, list: if true;
+      allow create, update: if isValidId(dealerId) && isValidDealer(incoming());
+      allow delete: if isValidId(dealerId);
+    }
+
+    // 2. Customer Leads Collection
+    match /leads/{leadId} {
+      allow get, list: if true;
+      allow create: if isValidId(leadId) && isValidLead(incoming());
+      allow update: if isValidId(leadId) && isValidLeadUpdate(incoming(), existing());
+      allow delete: if isValidId(leadId);
+    }
+
+    // 3. Mobile Number Uniqueness Enforcement
+    match /lead_uniqueness/{phone} {
+      allow get, list: if true;
+      allow create: if isValidUniqueness(incoming(), phone);
+      allow update, delete: if true;
+    }
+
+    // 4. Server-Authoritative Lead Notification Ledger (Cloud Functions Admin SDK only)
+    match /lead_notifications/{leadId} {
+      allow read, write: if false;
+    }
+  }
+}
